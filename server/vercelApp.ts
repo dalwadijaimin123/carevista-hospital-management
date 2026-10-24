@@ -1,9 +1,9 @@
 import express from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { appRouter } from "../server/routers";
-import { createContext } from "../server/_core/context";
-import { getDb } from "../server/db";
-import { registerAdminAIStream } from "../server/ai/adminStream";
+import { appRouter } from "./routers";
+import { createContext } from "./_core/context";
+import { getDb } from "./db";
+import { registerAdminAIStream } from "./ai/adminStream";
 // aa ma /api/ai/stream no handler pan move karvo padse
 
 const app = express();
