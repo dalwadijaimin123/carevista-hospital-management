@@ -4,7 +4,6 @@ import { appRouter } from "./routers";
 import { createContext } from "./_core/context";
 import { getDb } from "./db";
 import { registerAdminAIStream } from "./ai/adminStream";
-// aa ma /api/ai/stream no handler pan move karvo padse
 
 const app = express();
 app.use(express.json({ limit: "4mb" }));
@@ -28,5 +27,7 @@ app.use(
     createContext,
   }),
 );
+
+registerAdminAIStream(app);
 
 export default app;
