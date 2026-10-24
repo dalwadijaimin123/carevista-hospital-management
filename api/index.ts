@@ -21,4 +21,12 @@ app.use(async (_req, _res, next) => {
   }
 });
 
+app.use(
+  "/api/trpc",
+  createExpressMiddleware({
+    router: appRouter,
+    createContext,
+  }),
+);
+
 export default app;
