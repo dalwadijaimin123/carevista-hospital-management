@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+:root {
+  --background: 42 28% 96%;
+  --foreground: 190 26% 14%;
+  --card: 0 0% 100%;
+  --card-foreground: 190 26% 14%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 190 26% 14%;
+  --primary: 174 78% 31%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 173 28% 92%;
+  --secondary-foreground: 174 55% 21%;
+  --muted: 42 22% 91%;
+  --muted-foreground: 190 11% 43%;
+  --accent: 30 93% 93%;
+  --accent-foreground: 21 62% 30%;
+  --destructive: 0 74% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 42 17% 85%;
+  --input: 42 17% 85%;
+  --ring: 174 78% 31%;
+  --radius: 0.9rem;
+}
+
+* { border-color: hsl(var(--border)); }
+html { background: hsl(var(--background)); }
+body {
+  margin: 0;
+  min-width: 320px;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+button, a, input, textarea { -webkit-tap-highlight-color: transparent; }
+button { transition: transform 160ms cubic-bezier(.23,1,.32,1), background-color 160ms ease, border-color 160ms ease, color 160ms ease; }
+button:active { transform: scale(.97); }
+::selection { background: rgba(20, 142, 130, .2); }
+
+.display-font { font-family: "Bricolage Grotesque", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif; letter-spacing: -.025em !important; }
+.grid-paper {
+  background-image: linear-gradient(rgba(17, 74, 71, .035) 1px, transparent 1px), linear-gradient(90deg, rgba(17, 74, 71, .035) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.shadow-lift { box-shadow: 0 18px 50px rgba(22, 53, 50, .07), 0 3px 8px rgba(22, 53, 50, .04); }
+
+/* Hero: ECG line draws once on page load */
+.ecg-line { stroke-dasharray: 1600; stroke-dashoffset: 1600; animation: ecg-draw 2.6s cubic-bezier(.23,1,.32,1) .3s forwards; }
+@keyframes ecg-draw { to { stroke-dashoffset: 0; } }
+
+/* Slot board: chips settle in one after another, once */
+.slot-chip { opacity: 0; transform: translateY(6px); animation: slot-in .35s cubic-bezier(.23,1,.32,1) forwards; }
+@keyframes slot-in { to { opacity: 1; transform: none; } }
+
+/* Live "open now" dot */
+.live-dot { position: relative; }
+.live-dot::after { content: ""; position: absolute; inset: -4px; border-radius: 999px; background: currentColor; opacity: .35; animation: live-pulse 2s ease-out infinite; }
+@keyframes live-pulse { from { transform: scale(.6); opacity: .45; } to { transform: scale(1.6); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
