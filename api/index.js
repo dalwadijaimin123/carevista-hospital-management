@@ -1093,6 +1093,7 @@ var init_sdk = __esm({
 // server/vercelApp.ts
 import express from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import { z as z4 } from "zod";
 
 // server/routers.ts
 import { TRPCError as TRPCError3 } from "@trpc/server";
@@ -2069,9 +2070,64 @@ app.use(async (_req, _res, next) => {
     ready ??= getDb();
     await ready;
     next();
-  } catch (e) {
+  } catch (error) {
     ready = null;
-    next(e);
+    next(error);
+  }
+});
+app.post("/api/ai/stream", async (req, res) => {
+  const schema = z4.object({
+    task: z4.enum(["health", "appointment", "report"]),
+    message: z4.string().trim().min(3).max(1200)
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({
+      error: "Please enter a valid message."
+    });
+    return;
+  }
+  res.status(200);
+  res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders();
+  try {
+    for await (const text of streamGemini(
+      parsed.data.task,
+      parsed.data.message
+    )) {
+      if (res.destroyed || res.writableEnded) {
+        return;
+      }
+      res.write(
+        `event: chunk
+data: ${JSON.stringify({ text })}
+
+`
+      );
+    }
+    if (!res.destroyed && !res.writableEnded) {
+      res.write("event: done\ndata: {}\n\n");
+      res.end();
+    }
+  } catch (error) {
+    console.error(
+      "[CareVista AI] Stream route failed:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    if (!res.destroyed && !res.writableEnded) {
+      res.write(
+        `event: error
+data: ${JSON.stringify({
+          message: "AI request failed. Please try again."
+        })}
+
+`
+      );
+      res.end();
+    }
   }
 });
 app.use(
