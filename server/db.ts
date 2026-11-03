@@ -22,6 +22,11 @@ export type InsertUser = Partial<
   openId: string;
 };
 
+export async function deleteInventoryItem(id: string) {
+  const result = await (await inventoryItems()).deleteOne({ id });
+  return result.deletedCount === 1;
+}
+
 export interface Patient {
   id: string;
   patientCode: string;

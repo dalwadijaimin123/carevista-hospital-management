@@ -27,6 +27,7 @@ import {
   getContactMessages,
   getInventory,
   createInventoryItem,
+  deleteInventoryItem,
   getRegisteredUsers,
   getUserByEmail,
   getPasswordResetOtp,
@@ -104,6 +105,9 @@ export const appRouter = router({
       }),
   }),
 
+
+
+  
   
   appointments: router({
     slots: publicProcedure
@@ -434,6 +438,20 @@ export const appRouter = router({
         return { updated: result.updated, promotedPatient: result.promoted?.patientName ?? null };
       }),
     inventory: adminProcedure.query(() => getInventory()),
+    deleteInventoryItem: adminProcedure
+  .input(z.object({ id: z.string().trim().min(1) }))
+  .mutation(async ({ input }) => {
+    const deleted = await deleteInventoryItem(input.id);
+
+    if (!deleted) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Inventory item not found.",
+      });
+    }
+
+    return { deleted };
+  }),
     addInventoryItem: adminProcedure
       .input(
         z.object({
@@ -508,12 +526,14 @@ export const appRouter = router({
 
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "CareOps હાલમાં ઉપલબ્ધ નથી. કૃપા કરીને ફરી પ્રયાસ કરો.",
+            message: "CareOps cannot give you ans right now, Please try later.",
           });
         }
       }),
 
   }),
 });
+
+
 
 export type AppRouter = typeof appRouter;

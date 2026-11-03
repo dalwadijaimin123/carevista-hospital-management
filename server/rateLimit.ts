@@ -11,7 +11,11 @@ export function rateLimit(key: string, max: number, windowMs: number): boolean {
   recent.push(now);
   hits.set(key, recent);
   if (hits.size > 5000) {
-    for (const [k, v] of hits) if (v.every((t) => now - t >= windowMs)) hits.delete(k);
+    hits.forEach((timestamps, key) => {
+  if (timestamps.every((timestamp) => now - timestamp >= windowMs)) {
+    hits.delete(key);
+  }
+});
   }
   return true;
 }

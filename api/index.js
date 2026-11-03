@@ -61,6 +61,10 @@ var init_env = __esm({
 
 // server/db.ts
 import { MongoClient } from "mongodb";
+async function deleteInventoryItem(id) {
+  const result = await (await inventoryItems()).deleteOne({ id });
+  return result.deletedCount === 1;
+}
 async function getDb() {
   if (database) {
     return database;
@@ -1390,7 +1394,11 @@ function rateLimit(key, max, windowMs) {
   recent.push(now);
   hits.set(key, recent);
   if (hits.size > 5e3) {
-    for (const [k, v] of hits) if (v.every((t2) => now - t2 >= windowMs)) hits.delete(k);
+    hits.forEach((timestamps, key2) => {
+      if (timestamps.every((timestamp) => now - timestamp >= windowMs)) {
+        hits.delete(key2);
+      }
+    });
   }
   return true;
 }
@@ -1885,6 +1893,16 @@ var appRouter = router({
       return { updated: result.updated, promotedPatient: result.promoted?.patientName ?? null };
     }),
     inventory: adminProcedure2.query(() => getInventory()),
+    deleteInventoryItem: adminProcedure2.input(z2.object({ id: z2.string().trim().min(1) })).mutation(async ({ input }) => {
+      const deleted = await deleteInventoryItem(input.id);
+      if (!deleted) {
+        throw new TRPCError3({
+          code: "NOT_FOUND",
+          message: "Inventory item not found."
+        });
+      }
+      return { deleted };
+    }),
     addInventoryItem: adminProcedure2.input(
       z2.object({
         itemName: z2.string().trim().min(2).max(120),
@@ -1951,7 +1969,7 @@ ${input.context ?? "No additional context supplied."}`
         );
         throw new TRPCError3({
           code: "INTERNAL_SERVER_ERROR",
-          message: "CareOps \u0AB9\u0ABE\u0AB2\u0AAE\u0ABE\u0A82 \u0A89\u0AAA\u0AB2\u0AAC\u0ACD\u0AA7 \u0AA8\u0AA5\u0AC0. \u0A95\u0AC3\u0AAA\u0ABE \u0A95\u0AB0\u0AC0\u0AA8\u0AC7 \u0AAB\u0AB0\u0AC0 \u0AAA\u0ACD\u0AB0\u0AAF\u0ABE\u0AB8 \u0A95\u0AB0\u0ACB."
+          message: "CareOps cannot give you ans right now, Please try later."
         });
       }
     })
